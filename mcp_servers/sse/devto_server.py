@@ -161,7 +161,7 @@ def get_article_comments(article_id: int) -> list:
 
 
 def create_starlette_app(
-    mcp: Server = mcp,
+    mcp_server: Server = mcp,
     *,
     debug: bool = False,
 ) -> Starlette:

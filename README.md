@@ -2,7 +2,9 @@
 
 A comprehensive multi-agent system for interacting with Dev.to (DevTo) platform, built using Google ADK (Agent Development Kit) and Model Context Protocol (MCP). This project enables automated content creation, article management, and user profile interactions with DevTo through both Agent-to-Agent (A2A) communication and MCP server implementations.
 
-## 🚀 Project Overview
+### You can find follow along blog [here](https://dev.to/heetvekariya/devto-ai-agent-with-a2a-and-mcp-4d43)
+
+## Project Overview
 
 This project implements a sophisticated agent architecture that can:
 - Fetch and manage DevTo articles by tags or authors
@@ -11,18 +13,15 @@ This project implements a sophisticated agent architecture that can:
 - Manage article comments and followers
 - Provide both SSE (Server-Sent Events) and STDIO interfaces for different integration needs
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
 - [Project Structure](#project-structure)
 - [Component Details](#component-details)
 - [Setup and Installation](#setup-and-installation)
-- [Usage](#usage)
 - [API Reference](#api-reference)
-- [Configuration](#configuration)
-- [Contributing](#contributing)
 
-## 🏗️ Architecture Overview
+##  Architecture Overview
 
 The project follows a modular architecture with three main communication patterns:
 
@@ -46,7 +45,7 @@ The project follows a modular architecture with three main communication pattern
 3. **DevTo Service**: Direct API integration with Dev.to
 4. **Tool Connectors**: Bridge between agents and MCP servers
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 devto-agent/
@@ -77,7 +76,7 @@ devto-agent/
 └── pyproject.toml          # Project dependencies
 ```
 
-## 🔧 Component Details
+## Component Details
 
 ### 1. A2A Servers (`a2a_servers/`)
 
@@ -104,11 +103,6 @@ devto-agent/
 # - GET /sse: Server-Sent Events endpoint for real-time communication
 # - POST /messages/: Message posting endpoint for client commands
 ```
-
-#### STDIO Implementation (`stdio/devto_server.py`):
-- Standard input/output based communication
-- Suitable for command-line integrations
-- Synchronous communication pattern
 
 ### 3. DevTo Service (`services/devto_service.py`)
 
@@ -137,27 +131,23 @@ class DevToService:
 - Provides async tool interface for agents
 - Handles connection lifecycle management
 
-## ⚙️ Setup and Installation
+## Setup and Installation
 
 ### Prerequisites
 - Python 3.10 or higher
+- UVicorn for running servers
 - DevTo API key
-- Google ADK access (for agent functionality)
+- Google API key (for agent functionality)
 
 ### Installation Steps
 
 1. **Clone the repository**:
    ```powershell
-   git clone <repository-url>
+   git clone https://github.com/HeetVekariya/devto-agent.git
    cd devto-agent
    ```
 
-2. **Install dependencies**:
-   ```powershell
-   pip install -e .
-   ```
-
-3. **Environment Configuration**:
+2. **Environment Configuration**:
    Create a `.env` file in the project root:
    ```env
    DEVTO_API_KEY=your_devto_api_key_here
@@ -165,56 +155,65 @@ class DevToService:
    GOOGLE_API_KEY=your_google_api_key_here
    ```
 
-4. **Verify Installation**:
+3. **Install Dependencies**:
    ```powershell
-   python -c "import services.devto_service; print('Installation successful')"
+   uv pip install -e .
    ```
 
-## 🚀 Usage
+4. **Start the Devto MCP Server**
+   ```powershell
+   uv run mcp_servers/sse/devto_server.py
+   ```
 
-### 1. Start the MCP Server (SSE)
+5. **Start Devto Agent**
+   ```powershell
+   uv run a2a_servers/agent_server/devto_agent.py
+   ```
 
-```powershell
-cd mcp_servers/sse
-python devto_server.py
-```
-Server will start on `http://localhost:8000`
+6. **Start Host Agent**:
+   ```powershell
+   uv run a2a_servers/agent_server/host_agent.py 
+   ```
 
-### 2. Start the A2A Agent Server
-
-```powershell
-cd a2a_servers/agent_server
-python devto_agent.py
-```
-Agent server will start on `http://localhost:11000`
-
-### 3. Run the Client Application
-
-```powershell
-python main.py
-```
+7. **Run the Client Application**:
+   ```powershell
+   uv run main.py
+   ```
 
 ### Example Interactions
 
-#### Generate and Post Article:
+#### User Profile Fetching:
 ```python
-# The agent can handle requests like:
-"Create a technical article about Python async programming with relevant tags"
+# Request:
+"Retrieve my profile details"
 
-# The agent will:
-# 1. Generate markdown content
-# 2. Add appropriate tags (python, async, programming)
-# 3. Post to DevTo
-# 4. Return the published article URL
+# The agent response:
+Here are your profile details:
+{
+  "type_of": "user",
+  "id": ...,
+  "username": "heetvekariya",
+  "name": "HeetVekariya",
+  "twitter_username": "heet_2104",
+  "github_username": "HeetVekariya",
+  "summary": "A Tech person doing Non-Tech things.",
+  "location": "",
+  "website_url": "https://heet-vekariya.vercel.app/",
+  "joined_at": "Oct 12, 2023",
+  "profile_image": "....jpeg"
+}
 ```
 
-#### Fetch Articles by Tags:
+#### Fetch Articles:
 ```python
-# Request: "Get the latest Python articles"
-# Agent will fetch articles tagged with 'python' and return summaries
+# Request: 
+"How many blogs I have published on devto ?"
+
+# The agent response:
+You have published 11 articles on Dev.to.
 ```
 
-## 📚 API Reference
+## API Reference
 
 ### A2A Agent Skills
 
@@ -235,88 +234,3 @@ Available through the MCP server:
 - `post_article(title, body, tags)`: Article publishing
 - `get_user()`: User profile information
 - `get_user_reading_list()`: Saved articles
-
-## 🔧 Configuration
-
-### Agent Configuration
-
-Modify `devto_agent.py` to customize:
-- Model selection (`MODEL = "gemini-2.0-flash"`)
-- Agent instructions and behavior
-- Skills and capabilities
-- Server host/port settings
-
-### MCP Server Configuration
-
-Adjust `devto_server.py` for:
-- Server endpoints and routes
-- CORS settings
-- Debug mode
-- Message handling patterns
-
-### DevTo Service Configuration
-
-Update `devto_service.py` for:
-- API rate limiting
-- Error handling strategies
-- Response caching
-- Request timeouts
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-1. **Module Import Errors**:
-   ```python
-   # Ensure proper sys.path configuration
-   sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-   ```
-
-2. **MCP Connection Failures**:
-   - Verify MCP server is running on correct port
-   - Check firewall settings
-   - Ensure proper async/await usage
-
-3. **DevTo API Errors**:
-   - Validate API key in `.env` file
-   - Check rate limiting
-   - Verify API endpoint URLs
-
-### Debug Mode
-
-Enable debug logging:
-```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
-
-### Development Guidelines
-
-- Follow PEP 8 style guidelines
-- Add docstrings for all public methods
-- Include error handling for API calls
-- Write tests for new features
-- Update documentation as needed
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- Google ADK team for the agent development framework
-- Model Context Protocol specification contributors
-- DevTo API team for comprehensive API access
-- Starlette framework for SSE implementation
-
----
-
-For more detailed information about specific components, refer to the inline documentation in each module.
